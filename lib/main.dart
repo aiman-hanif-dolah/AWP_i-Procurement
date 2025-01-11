@@ -1,35 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:iprocurement/providers/submission_provider.dart';
-import 'package:iprocurement/screens/admin_dashboard_screen.dart';
-import 'package:iprocurement/screens/admin_evaluation_screen.dart';
-import 'package:iprocurement/screens/admin_vendor_screen.dart';
-import 'package:iprocurement/screens/tender_creation_screen.dart';
+import 'package:iprocurement/providers/tender_provider.dart';
+import 'package:iprocurement/screens/apply_tender_screen.dart';
+import 'package:iprocurement/screens/awp_dashboard_screen.dart';
+import 'package:iprocurement/screens/awp_evaluation_screen.dart';
+import 'package:iprocurement/screens/awp_reports_screen.dart';
+import 'package:iprocurement/screens/filter_table_screen.dart';
+import 'package:iprocurement/screens/tender_submission_screen.dart';
+import 'package:iprocurement/screens/vendor_dashboard_screen.dart';
+import 'package:iprocurement/screens/view_application_screen.dart';
+import 'package:iprocurement/services/theme.dart';
 import 'package:provider/provider.dart';
 
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
-import 'providers/tender_provider.dart';
-import 'providers/vendor_provider.dart'; // Import VendorProvider
+import 'providers/vendor_provider.dart';
+import 'providers/submission_provider.dart';
 
-import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/registration_screen.dart';
+import 'screens/tender_creation_screen.dart';
 
-Future<void> main() async {
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  } catch (e) {
-    print('Error initializing Firebase: $e');
-  }
-  runApp(const MyApp());
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -38,22 +39,30 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => TenderProvider()),
         ChangeNotifierProvider(create: (_) => SubmissionProvider()),
-        ChangeNotifierProvider(create: (_) => VendorProvider()), // Add VendorProvider
+        ChangeNotifierProvider(create: (_) => VendorProvider()),
       ],
       child: MaterialApp(
+        scaffoldMessengerKey: scaffoldMessengerKey,
         debugShowCheckedModeBanner: false,
         title: 'AWP i-Procurement',
-        theme: ThemeData(primarySwatch: Colors.blue),
+        theme: AppTheme.lightTheme,
         initialRoute: '/login',
         routes: {
           '/login': (context) => const LoginScreen(),
           '/register': (context) => const RegistrationScreen(),
-          '/home': (context) => const HomeScreen(),
-          '/admin-dashboard': (context) => const AdminDashboardScreen(),
-          '/vendor-approvals': (context) => const AdminVendorScreen(),
+          '/AWP-dashboard': (context) => const AWPDashboardScreen(),
+          '/AWP-reports': (context) => const AWPReportsScreen(),
+          '/AWP-evaluation': (context) => const AWPEvaluationScreen(),
+          '/evaluate-tenders': (context) => const AWPEvaluationScreen(),
+          '/vendor-dashboard': (context) => const VendorDashboardScreen(),
           '/create-tender': (context) => const TenderCreationScreen(),
-          '/evaluate-tenders': (context) => const AdminEvaluationScreen(),
+          '/submit-tender': (context) => const TenderSubmissionScreen(),
+          '/apply-tender': (context) => const ApplyTenderScreen(),
+          '/view-vendor-applications': (context) => const ViewApplicationScreen(),
         },
+        onUnknownRoute: (settings) => MaterialPageRoute(
+          builder: (context) => const LoginScreen(),
+        ),
       ),
     );
   }

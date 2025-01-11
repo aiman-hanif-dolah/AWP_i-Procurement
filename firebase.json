@@ -1,1 +1,55 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"awp-iprocurement","appId":"1:550838324209:android:0478d223156c3972e61250","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"awp-iprocurement","configurations":{"android":"1:550838324209:android:0478d223156c3972e61250","ios":"1:550838324209:ios:e9cf0ce9e235ed83e61250","macos":"1:550838324209:ios:e9cf0ce9e235ed83e61250","web":"1:550838324209:web:a73696fbe9e4ed0ae61250","windows":"1:550838324209:web:ee83326e868686a6e61250"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "aiman-hanif",
+          "appId": "1:424900090253:android:ae981eef0cfb3f71bd45c4",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "aiman-hanif",
+          "configurations": {
+            "android": "1:424900090253:android:ae981eef0cfb3f71bd45c4",
+            "ios": "1:424900090253:ios:bca747c3bd22e9a2bd45c4",
+            "macos": "1:424900090253:ios:bca747c3bd22e9a2bd45c4",
+            "web": "1:424900090253:web:2dff0e2f77d6e635bd45c4",
+            "windows": "1:424900090253:web:8cc5ffdcaccd0d7fbd45c4"
+          }
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "aiman-hanif",
+          "appId": "1:424900090253:ios:bca747c3bd22e9a2bd45c4",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "aiman-hanif",
+          "appId": "1:424900090253:ios:bca747c3bd22e9a2bd45c4",
+          "uploadDebugSymbols": false,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

@@ -11,25 +11,71 @@ class TenderProvider extends ChangeNotifier {
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final FirebaseUtility _firebaseUtility = FirebaseUtility();
 
-  List<TenderModel> tenders = []; // Declare the tenders list
+  List<TenderModel> tenders = []; // List of fetched tenders
 
-  // Create a new tender
+  //------------------------------------------------------------------------------
+  // Create a new tender, with auto-generated ID if missing
+  //------------------------------------------------------------------------------
   Future<void> createTender(Map<String, dynamic> tenderData) async {
     try {
-      await _firebaseUtility.addDocument('tenders', tenderData);
+      // If no 'procurementId' provided, generate one
+      if (!tenderData.containsKey('procurementId')) {
+        tenderData['procurementId'] = DateTime.now().millisecondsSinceEpoch.toString();
+      }
+
+      // Firestore doc ID and 'id' field both set to 'procurementId'
+      final String procurementId = tenderData['procurementId'];
+      tenderData['id'] = procurementId; // So that .fromMap(..., data['id']) works
+
+      // OPTIONAL: If you want new tenders to be open by default
+      tenderData['isOpen'] ??= true;
+
+      // OPTIONAL: Provide a default title if none is set
+      tenderData['title'] ??= 'Untitled Tender';
+
+      // OPTIONAL: Track creation date/time
+      tenderData['dateCreated'] ??= DateTime.now();
+
+      // Direct Firestore usage
+      final docRef = _firestore.collection('tenders').doc(procurementId);
+      await docRef.set(tenderData);
+
     } catch (e) {
       throw Exception('Failed to create tender: ${e.toString()}');
     }
   }
 
-  // Fetch tenders
+  //------------------------------------------------------------------------------
+  // Fetch tenders (no filter by default)
+  //------------------------------------------------------------------------------
   Stream<List<TenderModel>> fetchTenders() {
     return _firebaseUtility.fetchDocumentStream('tenders').map((docs) {
-      return docs.map((data) => TenderModel.fromMap(data, data['id'])).toList();
+      debugPrint('Fetched tender docs: $docs'); // Temporarily log the raw data
+      return docs.map((data) {
+        debugPrint('Tender data: $data');       // Log each doc individually
+        return TenderModel.fromMap(data, data['id']);
+      }).toList();
     });
   }
 
-  // Update tender status
+  //------------------------------------------------------------------------------
+  // Fetch a specific tender by ID
+  //------------------------------------------------------------------------------
+  Future<Map<String, dynamic>> fetchTenderById(String tenderId) async {
+    try {
+      final doc = await _firestore.collection('tenders').doc(tenderId).get();
+      if (!doc.exists) {
+        throw Exception('Tender with ID $tenderId does not exist.');
+      }
+      return doc.data()!;
+    } catch (e) {
+      throw Exception('Failed to fetch tender by ID: ${e.toString()}');
+    }
+  }
+
+  //------------------------------------------------------------------------------
+  // Update tender status (e.g., close an open tender)
+  //------------------------------------------------------------------------------
   Future<void> updateTenderStatus(String tenderId, bool isOpen) async {
     try {
       await _firebaseUtility.updateDocument('tenders', tenderId, {'isOpen': isOpen});
@@ -37,11 +83,20 @@ class TenderProvider extends ChangeNotifier {
       throw Exception('Failed to update tender status: ${e.toString()}');
     }
   }
-  // Submit a tender
-  Future<void> submitTender(String tenderId, File file, Map<String, dynamic> submissionData) async {
+
+  //------------------------------------------------------------------------------
+  // Submit a tender (with file upload)
+  //------------------------------------------------------------------------------
+  Future<void> submitTender(
+      String tenderId,
+      File file,
+      Map<String, dynamic> submissionData,
+      ) async {
     try {
-      // Upload tender file to Firebase Storage
-      final ref = _storage.ref().child('tender_submissions/$tenderId/${submissionData['vendorId']}.pdf');
+      // Upload file to Firebase Storage
+      final ref = _storage.ref().child(
+        'tender_submissions/$tenderId/${submissionData['vendorId']}.pdf',
+      );
       final uploadTask = await ref.putFile(file);
       final fileUrl = await uploadTask.ref.getDownloadURL();
 
@@ -53,7 +108,9 @@ class TenderProvider extends ChangeNotifier {
     }
   }
 
-  // Evaluate and rank submissions
+  //------------------------------------------------------------------------------
+  // Evaluate and rank submissions for a tender
+  //------------------------------------------------------------------------------
   Future<void> evaluateTender(String tenderId) async {
     try {
       final submissions = await _firestore
@@ -80,18 +137,21 @@ class TenderProvider extends ChangeNotifier {
     }
   }
 
+  // Example scoring function
   int calculateScore(Map<String, dynamic> submission) {
-    // Example: Score based on bid amount (lower is better)
-    // Replace with your actual scoring logic
+    // For demonstration only: higher score for lower bid
     if (submission.containsKey('bidAmount')) {
       final bidAmount = submission['bidAmount'];
       if (bidAmount is num) {
-        return 1000 - bidAmount.toInt(); // Example: Higher score for lower bid
+        return 1000 - bidAmount.toInt();
       }
     }
-    return 0; // Default score if no criteria match
+    return 0;
   }
 
+  //------------------------------------------------------------------------------
+  // Generate a tenders report
+  //------------------------------------------------------------------------------
   Future<List<Map<String, dynamic>>> fetchTendersReport() async {
     try {
       final snapshot = await _firestore.collection('tenders').get();
@@ -100,7 +160,10 @@ class TenderProvider extends ChangeNotifier {
       throw Exception('Failed to generate tender report: ${e.toString()}');
     }
   }
-  // Add a notification related to tenders
+
+  //------------------------------------------------------------------------------
+  // Notify vendor (store a notification in Firestore or similar)
+  //------------------------------------------------------------------------------
   Future<void> notifyVendor(String vendorId, String message) async {
     try {
       await _firebaseUtility.addNotification(vendorId, message);
@@ -109,7 +172,9 @@ class TenderProvider extends ChangeNotifier {
     }
   }
 
+  //------------------------------------------------------------------------------
   // Fetch notifications for a specific vendor
+  //------------------------------------------------------------------------------
   Stream<List<Map<String, dynamic>>> fetchVendorNotifications(String vendorId) {
     return _firebaseUtility.fetchDocumentStream(
       'notifications',
@@ -117,4 +182,34 @@ class TenderProvider extends ChangeNotifier {
       value: vendorId,
     );
   }
+
+  Future<Map<String, int>> fetchDatabaseStats() async {
+    final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+    try {
+      // 1) Count how many user docs
+      final usersSnap = await _firestore.collection('users').get();
+      final totalUsers = usersSnap.size;
+
+      // 2) Count how many tender docs
+      final tendersSnap = await _firestore.collection('tenders').get();
+      final totalTenders = tendersSnap.size;
+
+      // 3) Sum up total submissions across all tenders
+      int totalSubmissions = 0;
+      for (var tenderDoc in tendersSnap.docs) {
+        final submissionsSnap = await tenderDoc.reference.collection('submissions').get();
+        totalSubmissions += submissionsSnap.size;
+      }
+
+      return {
+        'users': totalUsers,
+        'tenders': totalTenders,
+        'submissions': totalSubmissions,
+      };
+    } catch (e) {
+      throw Exception('Failed to fetch DB stats: $e');
+    }
+  }
+
 }

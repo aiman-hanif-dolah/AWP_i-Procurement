@@ -1,6 +1,7 @@
 // firebase_utility.dart
 
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
@@ -25,9 +26,24 @@ class FirebaseUtility {
   }
 
   // Add a document to Firestore
-  Future<DocumentReference> addDocument(String collectionPath, Map<String, dynamic> data) async {
+// firebase_utility.dart
+
+  Future<DocumentReference> addDocument(
+      String collectionPath,
+      Map<String, dynamic> data, {
+        String? docId,
+      }) async {
     try {
-      return await _firestore.collection(collectionPath).add(data);
+      final collectionRef = _firestore.collection(collectionPath);
+
+      // If docId is provided, use that as the Firestore doc ID
+      if (docId != null && docId.isNotEmpty) {
+        await collectionRef.doc(docId).set(data);
+        return collectionRef.doc(docId);
+      } else {
+        // Otherwise, let Firestore auto-generate an ID
+        return await collectionRef.add(data);
+      }
     } catch (e) {
       throw Exception('Failed to add document: ${e.toString()}');
     }
@@ -87,4 +103,24 @@ class FirebaseUtility {
       throw Exception('Failed to fetch document stream: ${e.toString()}');
     }
   }
+
+  Future<String> uploadFileFromBytes(String path, Uint8List fileBytes) async {
+    try {
+      final ref = _storage.ref().child(path);
+      final uploadTask = ref.putData(fileBytes);
+      await uploadTask;
+      return await ref.getDownloadURL();
+    } catch (e) {
+      throw Exception('File upload failed: ${e.toString()}');
+    }
+  }
+
+  Future<String> getDownloadUrl(String path) async {
+    try {
+      return await FirebaseStorage.instance.ref(path).getDownloadURL();
+    } catch (e) {
+      throw Exception('Failed to generate download URL: $e');
+    }
+  }
+
 }

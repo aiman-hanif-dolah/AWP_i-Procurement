@@ -1,36 +1,49 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class TenderModel {
-  final String id;
+  final String submissionId;
   final String title;
   final String description;
   final bool isOpen;
-  final DateTime submissionDeadline;
+  final DateTime? startDate;
+  final DateTime? endDate;
 
   TenderModel({
-    required this.id,
+    required this.submissionId,
     required this.title,
     required this.description,
     required this.isOpen,
-    required this.submissionDeadline,
+    this.startDate,
+    this.endDate,
   });
 
-  factory TenderModel.fromMap(Map<String, dynamic> map, String id) {
+  factory TenderModel.fromMap(Map<String, dynamic> map, String docId) {
+    // Safely parse potential Timestamps or Strings for startDate/endDate
+    DateTime? parsedStart;
+    if (map['startDate'] is Timestamp) {
+      parsedStart = (map['startDate'] as Timestamp).toDate();
+    } else if (map['startDate'] is String) {
+      try {
+        parsedStart = DateTime.parse(map['startDate']);
+      } catch (_) {}
+    }
+
+    DateTime? parsedEnd;
+    if (map['endDate'] is Timestamp) {
+      parsedEnd = (map['endDate'] as Timestamp).toDate();
+    } else if (map['endDate'] is String) {
+      try {
+        parsedEnd = DateTime.parse(map['endDate']);
+      } catch (_) {}
+    }
+
     return TenderModel(
-      id: id,
+      submissionId: docId,
       title: map['title'] ?? '',
       description: map['description'] ?? '',
       isOpen: map['isOpen'] ?? false,
-      submissionDeadline: (map['submissionDeadline'] as Timestamp).toDate(),
+      startDate: parsedStart,
+      endDate: parsedEnd,
     );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'title': title,
-      'description': description,
-      'isOpen': isOpen,
-      'submissionDeadline': submissionDeadline,
-    };
   }
 }
