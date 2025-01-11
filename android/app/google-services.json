@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "550838324209",
+    "project_id": "awp-iprocurement",
+    "storage_bucket": "awp-iprocurement.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:550838324209:android:8b0b38dc38b2a3e8e61250",
+        "android_client_info": {
+          "package_name": "com.fsktm.iprocurement"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBponhoRrFtnf8Cc8cfhqIdlKhKpybI_o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:550838324209:android:0478d223156c3972e61250",
+        "android_client_info": {
+          "package_name": "com.tm.iprocurement"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBponhoRrFtnf8Cc8cfhqIdlKhKpybI_o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
