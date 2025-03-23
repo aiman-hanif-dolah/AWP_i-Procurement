@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <style>
+        #chart_container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        .chart-title {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        .legend-container {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.3rem;
+        }
+        .color-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+    </style>
+
+    <script>
+        google.charts.load("current", { packages: ["gantt"] });
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            var data = new google.visualization.DataTable();
+            data.addColumn("string", "Task ID");
+            data.addColumn("string", "Task Name");
+            data.addColumn("string", "Resource");
+            data.addColumn("date", "Start Date");
+            data.addColumn("date", "End Date");
+            data.addColumn("number", "Duration");
+            data.addColumn("number", "Percent Complete");
+            data.addColumn("string", "Dependencies");
+
+            data.addRows([
+                ["cycle1_plan", "Cycle 1 - Planning", "Semester 1", new Date(2025, 2, 3), new Date(2025, 2, 9), null, 0, null],
+                ["cycle1_risk", "Cycle 1 - Risk Analysis", "Semester 1", new Date(2025, 2, 10), new Date(2025, 2, 16), null, 0, "cycle1_plan"],
+                ["cycle1_dev", "Cycle 1 - Development & Test", "Semester 1", new Date(2025, 2, 17), new Date(2025, 2, 30), null, 0, "cycle1_risk"],
+
+                ["cycle2_plan", "Cycle 2 - Planning", "Semester 1", new Date(2025, 2, 31), new Date(2025, 3, 6), null, 0, "cycle1_dev"],
+                ["cycle2_risk", "Cycle 2 - Risk Analysis", "Semester 1", new Date(2025, 3, 7), new Date(2025, 3, 13), null, 0, "cycle2_plan"],
+                ["cycle2_dev", "Cycle 2 - Development & Test", "Semester 1", new Date(2025, 3, 14), new Date(2025, 3, 27), null, 0, "cycle2_risk"],
+
+                ["cycle3_plan", "Cycle 3 - Planning", "Semester 1", new Date(2025, 3, 28), new Date(2025, 4, 4), null, 0, "cycle2_dev"],
+                ["cycle3_risk", "Cycle 3 - Risk Analysis", "Semester 1", new Date(2025, 4, 5), new Date(2025, 4, 11), null, 0, "cycle3_plan"],
+                ["cycle3_dev", "Cycle 3 - Development & Test", "Semester 1", new Date(2025, 4, 12), new Date(2025, 4, 25), null, 0, "cycle3_risk"],
+
+                ["leftover_s1", "Leftover Period (Jun 10 - Jul 31)", "Semester 1", new Date(2025, 5, 10), new Date(2025, 6, 31), null, 0, "cycle3_dev"],
+                ["break_aug_sep", "Semester Break (Aug 1 - Sep 30)", "Break", new Date(2025, 7, 1), new Date(2025, 8, 30), null, 0, "leftover_s1"],
+
+                ["cycle4_plan", "Cycle 4 - Planning", "Semester 2", new Date(2025, 9, 1), new Date(2025, 9, 7), null, 0, "break_aug_sep"],
+                ["cycle4_risk", "Cycle 4 - Risk Analysis", "Semester 2", new Date(2025, 9, 8), new Date(2025, 9, 14), null, 0, "cycle4_plan"],
+                ["cycle4_dev", "Cycle 4 - Development & Test", "Semester 2", new Date(2025, 9, 15), new Date(2025, 9, 28), null, 0, "cycle4_risk"],
+
+                ["cycle5_plan", "Cycle 5 - Planning", "Semester 2", new Date(2025, 9, 29), new Date(2025, 10, 4), null, 0, "cycle4_dev"],
+                ["cycle5_risk", "Cycle 5 - Risk Analysis", "Semester 2", new Date(2025, 10, 5), new Date(2025, 10, 11), null, 0, "cycle5_plan"],
+                ["cycle5_dev", "Cycle 5 - Development & Test", "Semester 2", new Date(2025, 10, 12), new Date(2025, 10, 25), null, 0, "cycle5_risk"],
+
+                ["finalization", "Final Integration & Validation", "Finalization", new Date(2025, 10, 26), new Date(2025, 11, 23), null, 0, "cycle5_dev"],
+                ["final_checks", "Final Checks", "Finalization", new Date(2025, 11, 24), new Date(2026, 0, 7), null, 0, "finalization"],
+                ["presentation", "Final Presentation (Jan 8 - Jan 31)", "Finalization", new Date(2026, 0, 8), new Date(2026, 0, 31), null, 0, "final_checks"],
+                ["submission", "Final Submission (Feb 1 - Feb 28)", "Finalization", new Date(2026, 1, 1), new Date(2026, 1, 28), null, 0, "presentation"]
+            ]);
+
+            var options = {
+                height: 800,
+                gantt: {
+                    trackHeight: 40,
+                    barCornerRadius: 5,
+                    percentEnabled: false,
+                    defaultStartDate: new Date(2025, 2, 3),
+                    criticalPathEnabled: true,
+                    criticalPathStyle: {
+                        stroke: '#e64a19',
+                        strokeWidth: 3
+                    },
+                    arrow: {
+                        angle: 90,
+                        width: 5,
+                        color: '#1a237e',
+                        radius: 5
+                    },
+                    palette: [
+                        {color: '#EC407A', dark: '#AD1457', light: '#F8BBD0'}, // Pink
+                        {color: '#AB47BC', dark: '#6A1B9A', light: '#E1BEE7'}, // Purple
+                        {color: '#EF5350', dark: '#C62828', light: '#FFCDD2'}, // Red
+                        {color: '#9CCC65', dark: '#689F38', light: '#DCEDC8'}  // Lime Green
+                    ]
+                }
+            };
+
+            var chart = new google.visualization.Gantt(document.getElementById("chart_div"));
+            chart.draw(data, options);
+        }
+    </script>
+</head>
+
+<body style="background:#f2f2f2; margin:0; padding:20px;">
+<div id="chart_container">
+    <div class="chart-title">FYP Gantt Chart (Spiral Model)</div>
+
+    <div class="legend-container">
+        <div class="legend-item">
+            <div class="color-box" style="background:#EC407A;"></div>Semester 1
+        </div>
+        <div class="legend-item">
+            <div class="color-box" style="background:#AB47BC;"></div>Semester Break
+        </div>
+        <div class="legend-item">
+            <div class="color-box" style="background:#EF5350;"></div>Semester 2
+        </div>
+        <div class="legend-item">
+            <div class="color-box" style="background:#9CCC65;"></div>Final Phase
+        </div>
+    </div>
+
+    <div id="chart_div"></div>
+</div>
+</body>
+</html>
